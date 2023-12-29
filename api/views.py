@@ -12,8 +12,9 @@ from rest_framework.decorators import api_view,permission_classes, authenticatio
 
 
 @api_view(['POST'])
-@authentication_classes([SessionAuthentication])
-@permission_classes([permissions.IsAuthenticated])
 def main(request):
-    HttpResponse("Hello, world. You're at the polls index.")
-    return HttpResponse("Hello, world. You're at the polls index.")
+    #Extract JSON data
+    data = JSONParser().parse(request)
+    productName = data['product']
+    category = data['category']
+
