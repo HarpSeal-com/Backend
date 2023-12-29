@@ -1,0 +1,86 @@
+{
+	"Amazon": {
+		"url": "https://www.amazon.co.uk/",
+		"country": "UK",
+		"products": "all"
+	},
+
+	"Currys": {
+		"url": "https://www.currys.co.uk/",
+		"country": "UK",
+		"products": "all"
+	},
+
+	"Argos": {
+		"url": "https://www.argos.co.uk/",
+		"country": "UK",
+		"products": "all"
+	},
+
+	"Apple": {
+		"url": "https://www.apple.com/uk/",
+		"country": "UK",
+		"products": [
+			"Phones",
+			"Laptops",
+			"Wearables"
+		]
+	},
+
+	"Samsung": {
+		"url": "https://www.samsung.com/uk/",
+		"country": "UK",
+		"products": [
+			"Phones",
+			"TVs",
+			"Wearables"
+		]
+	},
+
+	"Google Pixel": {
+		"url": "https://store.google.com/gb/?hl=en-GB",
+		"country": "UK",
+		"products": [
+			"Phones",
+			"Wearables"
+		]
+	},
+
+	"John Lewis": {
+		"url": "https://www.johnlewis.com/",
+		"country": "UK",
+		"products": "all"
+	},
+
+	"Very": {
+		"url": "https://www.very.co.uk/",
+		"country": "UK",
+		"products": "all"
+	},
+
+	"Dell": {
+		"url": "https://www.dell.com/en-uk",
+		"country": "UK",
+		"products": [
+			"Laptops"
+		]
+	},
+
+	"Asus": {
+		"url": "https://www.asus.com/uk/",
+		"country": "UK",
+		"products": [
+			"Laptops"
+		]
+	},
+
+	"Microsoft Store": {
+		"url": "https://www.microsoft.com/en-gb",
+		"country": "UK",
+		"products": [
+			"Laptops",
+			"Wearables",
+			"Consoles"
+		]
+	}
+}
