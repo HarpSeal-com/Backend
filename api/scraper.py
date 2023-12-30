@@ -1,12 +1,7 @@
 import requests
-from selenium import webdriver, common
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-
 import json
+
+
 from time import sleep, time
 from random import randint, randrange, choice
 import lxml
