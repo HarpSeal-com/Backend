@@ -26,3 +26,25 @@ def main(request):
 
     return HttpResponse(result, content_type='application/json')
 
+@api_view(['POST'])
+def apiTest(request):
+    #Extract JSON data
+    data = JSONParser().parse(request)
+    productName = data['product']
+    category = data['category']
+
+    searchTermX = getProductLink(productName, category)
+    result = searchTermX.findPage(
+        {
+            "Amazon": {
+                "url": "https://www.amazon.co.uk/",
+                "country": "UK",
+                "products": "all"
+            }
+        }
+    )
+
+    return HttpResponse(result['Link'], content_type='application/json')
+
+
+
