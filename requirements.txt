@@ -1,5 +1,6 @@
 Django
 djangorestframework
+selenium
 beautifulsoup4
 requests
 fake-useragent

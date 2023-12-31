@@ -43,7 +43,7 @@ def apiTest(request):
         }
     )
 
-    return JsonResponse(result, content_type='application/json')
+    return HttpResponse(result['Link'], content_type='application/json')
 
 
 
