@@ -46,7 +46,7 @@ class getProductLink:
         # User-Agent strings pool
         user_agent = UserAgent()
         self.headers = {'User-Agent': user_agent.random,
-                   'Origin': 'https://www.google.com', 'Referer': 'https://www.google.com'}
+            'Origin': 'https://www.google.com', 'Referer': 'https://www.google.com'}
 
     def __validRetailers(self):
         with open('stores.json', 'r') as f:
@@ -68,7 +68,6 @@ class getProductLink:
         options.add_argument("--disable-extensions")
 
         driver = webdriver.Chrome(options=options)
-
         timeout = 10
 
         #-------AMAZON-------#
@@ -77,55 +76,60 @@ class getProductLink:
         if retailer:
             #Seach XPath: //*[@id="twotabsearchtextbox"]
             driver.get(retailer['url'])
-            searchBox = driver.find_element("xpath", '//*[@id="twotabsearchtextbox"]')
-            searchBox.clear()
-            searchBox.send_keys(self.productName)
-            searchBox.send_keys(Keys.ENTER)
 
-            count = 3
-            loader = 0
-            elementXPath = f"/ html / body / div[1] / div[1] / div[1] / div[1] / div / span[1] / div[1] / div[{count}]"
+            count = 1
+            elementXPath = f'//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[{count}]'
+            myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
+            WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
 
-            while loader < 1:
-                myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
-                loader = 1
+            content = driver.page_source
+            soup = bs4(content, 'lxml')
 
-            #Temporary List that hold a simple dictionary link:price
-            #At the end will be used to return the lowest price link
+            # Use bs4 to get product links
             productList = []
+            try:
+                products = soup.find_all("a", class_="a-link-normal")
+            except Exception as e:
+                products = soup.find_all("a", class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
 
-            while count != 7:
-                #Click on specific product link XPath
+            temp = 0 
+            for product in products:
+                if temp == 0:
+                    temp += 1
+                    continue
+                if (self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
+                "+".join(self.productName.split(" ")) in product.text):
+                    productList.append(product.get('href'))
+
+            # Use bs4 to get product prices after selenium gets page link
+            productsList = []
+            for product in productList:
                 try:
-                    productLinkXpath = f'/html/body/div[1]/div[1]/div[1]/div[1]/div/span[1]/div[1]/div[{count}]/div/div/span/div/div/div/div[2]/div/div/div[1]/h2/a'
-                    productLink = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{productLinkXpath}')))
-                    productLinkHref = productLink.get_attribute('href')
-                    productLinkHref = productLinkHref[0:].replace(" ", "")
-                    productList.append(productLinkHref)
-                except:
+                    driver.get(f"https://www.amazon.co.uk{product}")
+                except Exception as e:
+                    driver.quit()
+                    driver = webdriver.Chrome(options=options)
+                    driver.get(product)
+
+                content = driver.page_source
+                soup = bs4(content, 'lxml')
+                
+                price = soup.find("span", class_="a-offscreen").text
+                try:
+                    price = float(price.replace("£", ""))
+                    productsList.append({'Link': f"https://www.amazon.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                except ValueError:
                     pass
-                count += 1
+                except Exception as e:
+                    print(e)
+
+            return productsList
 
 
-            #Loop through the temporary list of links and get the price
-            tempList = []
-            r = bs4(driver.page_source, 'lxml')
+            
+                
 
-            priceClassName = 'a-price-whole'
-            decimalClassName = 'a-price-fraction'
-            whole = r.find('span', {'class': priceClassName}).text
-            decimal = r.find('span', {'class': decimalClassName}).text
-            price = f"{whole}{decimal}"
-
-            #return {'Link': driver.current_url, 'Retailer': 'Amazon', 'Price': price}
-
-            if len(self.lowestPrices) == 0:
-                self.lowestPrices.append(tempList[0])
-            else:
-                if self.lowestPrices[0]['price'] > tempList[0]['price']:
-                    self.lowestPrices.pop()
-                    self.lowestPrices.append(tempList[0])
-
+    
         #--------------------#
         #--------------------#
 

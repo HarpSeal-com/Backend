@@ -36,14 +36,14 @@ def apiTest(request):
     result = searchTermX.findPage(
         {
             "Amazon": {
-                "url": "https://www.amazon.co.uk/",
+                "url": f"https://www.amazon.co.uk/s?k={productName}&language=en_GB&crid=2HI29GR81T65C&linkCode=ll2&linkId=2ca4f43cbe0f08dcc779b9d74749b620&sprefix={productName}%2Caps%2C69&ref=as_li_ss_tl",
                 "country": "UK",
                 "products": "all"
             }
         }
     )
 
-    return JsonResponse(result, content_type='application/json')
+    return HttpResponse(result)
 
 
 
