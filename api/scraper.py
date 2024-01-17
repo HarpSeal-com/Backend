@@ -32,7 +32,7 @@ class getProductLink:
     def __init__(self, productName, category):
         self.productName = productName
         self.category = category
-        self.lowestPrices = []  # Stack structure
+        self.links = []  # Stack structure
         self.lowestPriceLink = ''
         self.lowestPriceRetailer = ''
         self.lowestPrice = 0
@@ -123,7 +123,15 @@ class getProductLink:
                 except Exception as e:
                     print(e)
 
-            return productsList
+            for product in productsList:
+                if self.links:
+                    if product['Price'] < self.links[0]['Price']:
+                        self.links.pop()
+                        self.links.append(product)
+                else:
+                    self.links.append(product)
+
+            return self.links
 
 
             
