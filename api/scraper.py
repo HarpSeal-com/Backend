@@ -111,8 +111,12 @@ class getProductLink:
                     if temp == 0:
                         temp += 1
                         continue
-                    if (self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
-                    "+".join(self.productName.split(" ")) in product.text):
+                    if ((self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
+                        "+".join(self.productName.split(" ")) in product.text) and (
+                        ("case" not in product.text.lower())
+                        and ("protector" not in product.text.lower()) and ("cover" not in product.text.lower()))
+                        and ("screen" not in product.text.lower()) and ("film" not in product.text.lower())):
+
                         productList.append(product.get('href'))
 
                 # Use bs4 to get product prices after selenium gets page link
@@ -220,10 +224,14 @@ class getProductLink:
 
     def getPublic(self):
         self.findPage()
-        lowestPriceLink = self.links[0]['Link']
-        lowestPriceRetailer = self.links[0]['Retailer']
-        lowestPrice = self.links[0]['Price']
-        return {'Link': lowestPriceLink, 'Retailer': lowestPriceRetailer, 'Price': lowestPrice}
+        try:
+            lowestPriceLink = self.links[0]['Link']
+            lowestPriceRetailer = self.links[0]['Retailer']
+            lowestPrice = self.links[0]['Price']
+            return {'Link': lowestPriceLink, 'Retailer': lowestPriceRetailer, 'Price': lowestPrice}
+        except IndexError:
+            raise IndexError
+        pass
 
 
 
