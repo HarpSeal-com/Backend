@@ -48,13 +48,21 @@ class getProductLink:
         self.headers = {'User-Agent': user_agent.random,
             'Origin': 'https://www.google.com', 'Referer': 'https://www.google.com'}
 
-    def __validRetailers(self):
-        with open('stores.json', 'r') as f:
-            retailers = json.load(f)
-            valid = [x for x in retailers if self.category in x['products'] or x['products'] == 'all']
-            return valid
 
-    def findPage(self, retailer):
+    def __validRetailers(self):
+        with open('api/stores.json', 'r') as f:
+            retailers = json.load(f)
+
+            validRetailers = []
+            
+            for key, value in retailers.items():
+                if self.category in value["products"] or value["products"] == "all":
+                    validRetailers.append({key: value})
+
+            print(validRetailers, end="\n")
+            return validRetailers
+
+    def findPage(self):
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
@@ -70,141 +78,140 @@ class getProductLink:
         driver = webdriver.Chrome(options=options)
         timeout = 10
 
+        retailers = self.__validRetailers()
+
         #-------AMAZON-------#
         #--------------------#
-        retailer = retailer['Amazon']
-        if retailer:
-            #Seach XPath: //*[@id="twotabsearchtextbox"]
-            driver.get(retailer['url'])
 
-            count = 1
-            elementXPath = f'//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[{count}]'
-            myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
-            WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
+        for retailer in retailers:
 
-            content = driver.page_source
-            soup = bs4(content, 'lxml')
+            if retailer.get('Amazon'):
+                #Seach XPath: //*[@id="twotabsearchtextbox"]
+                url = retailer['Amazon']['url']
+                url = url.replace("-placeholder-", f"{self.productName}")
+                driver.get(url)
 
-            # Use bs4 to get product links
-            productList = []
-            try:
-                products = soup.find_all("a", class_="a-link-normal")
-            except Exception as e:
-                products = soup.find_all("a", class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
-
-            temp = 0 
-            for product in products:
-                if temp == 0:
-                    temp += 1
-                    continue
-                if (self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
-                "+".join(self.productName.split(" ")) in product.text):
-                    productList.append(product.get('href'))
-
-            # Use bs4 to get product prices after selenium gets page link
-            productsList = []
-            for product in productList:
-                try:
-                    driver.get(f"https://www.amazon.co.uk{product}")
-                except Exception as e:
-                    driver.quit()
-                    driver = webdriver.Chrome(options=options)
-                    driver.get(product)
+                count = 1
+                elementXPath = f'//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[{count}]'
+                myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
+                WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
 
                 content = driver.page_source
                 soup = bs4(content, 'lxml')
-                
-                price = soup.find("span", class_="a-offscreen").text
+
+                # Use bs4 to get product links
+                productList = []
                 try:
-                    price = float(price.replace("£", ""))
-                    productsList.append({'Link': f"https://www.amazon.co.uk{product}", 'Retailer': retailer, 'Price': price})
-                except ValueError:
-                    pass
+                    products = soup.find_all("a", class_="a-link-normal")
                 except Exception as e:
-                    print(e)
+                    products = soup.find_all("a", class_="a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal")
 
-            for product in productsList:
-                if self.links:
-                    if product['Price'] < self.links[0]['Price']:
-                        self.links.pop()
-                        self.links.append(product)
-                else:
-                    self.links.append(product)
+                temp = 0 
+                for product in products:
+                    if temp == 0:
+                        temp += 1
+                        continue
+                    if (self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
+                    "+".join(self.productName.split(" ")) in product.text):
+                        productList.append(product.get('href'))
 
-            return self.links
+                # Use bs4 to get product prices after selenium gets page link
+                productsList = []
+                for product in productList:
+                    try:
+                        driver.get(f"https://www.amazon.co.uk{product}")
+                    except Exception as e:
+                        driver.quit()
+                        driver = webdriver.Chrome(options=options)
+                        driver.get(product)
+
+                    content = driver.page_source
+                    soup = bs4(content, 'lxml')
+                    
+                    price = soup.find("span", class_="a-offscreen").text
+                    try:
+                        price = float(price.replace("£", ""))
+                        productsList.append({'Link': f"https://www.amazon.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                    except ValueError:
+                        pass
+                    except Exception as e:
+                        print(e)
+
+                for product in productsList:
+                    if self.links:
+                        if product['Price'] < self.links[0]['Price']:
+                            self.links.pop()
+                            self.links.append(product)
+                    else:
+                        self.links.append(product)            
+                    
+            #--------------------#
+            #--------------------#
 
 
-            
-                
-
-    
-        #--------------------#
-        #--------------------#
-
-
-        #-------Currys-------#
-        #--------------------#
-        elif retailer['name'] == "Currys":
-            pass
-        #--------------------#
-        #--------------------#
+            #-------Currys-------#
+            #--------------------#
+            elif retailer.get('Currys'):
+                pass
+            #--------------------#
+            #--------------------#
 
 
-        #-------Argos-------#
-        #--------------------#
-        elif retailer['name'] == "Argos":
-            pass
-        #--------------------#
-        #--------------------#
+            #-------Argos-------#
+            #--------------------#
+            elif retailer.get('Argos'):
+                pass
+            #--------------------#
+            #--------------------#
 
-        #-------John Lewis-------#
-        #------------------------#
-        elif retailer['name'] == "John Lewis":
-            pass
-        #------------------------#
-        #------------------------#
+            #-------John Lewis-------#
+            #------------------------#
+            elif retailer.get('John Lewis'):
+                pass
+            #------------------------#
+            #------------------------#
 
-        #-------Apple-------#
-        #-------------------#
-        elif retailer['name'] == "Apple":
-            pass
-        #-------------------#
-        #-------------------#
+            #-------Apple-------#
+            #-------------------#
+            elif retailer.get('Apple'):
+                pass
+            #-------------------#
+            #-------------------#
 
-        #-------Samsung-------#
-        #---------------------#
-        elif retailer['name'] == "Samsung":
-            pass
-        #---------------------#
-        #---------------------#
+            #-------Samsung-------#
+            #---------------------#
+            elif retailer.get('Samsung'):
+                pass
+            #---------------------#
+            #---------------------#
 
-        #-------Dell-------#
-        #------------------#
-        elif retailer['name'] == "Dell":
-            pass
-        #------------------#
-        #------------------#
+            #-------Dell-------#
+            #------------------#
+            elif retailer.get('Dell'):
+                pass
+            #------------------#
+            #------------------#
 
-        #-------Asus-------#
-        #------------------#
-        elif retailer['name'] == "Asus":
-            pass
-        #------------------#
-        #------------------#
+            #-------Asus-------#
+            #------------------#
+            elif retailer.get('Asus'):
+                pass
+            #------------------#
+            #------------------#
 
-        #-------Very-------#
-        #------------------#
-        elif retailer['name'] == "Very":
-            pass
-        #------------------#
-        #------------------#
+            #-------Very-------#
+            #------------------#
+            elif retailer.get('Very'):
+                pass
+            #------------------#
+            #------------------#
 
-        #-------Microsoft Store-------#
-        #------------------------------#
-        elif retailer['name'] == "Microsoft Store":
-            pass
-        #------------------------------#
-        #------------------------------#
+            #-------Microsoft Store-------#
+            #------------------------------#
+            elif retailer.get('Microsoft Store'):
+                pass
+            #------------------------------#
+            #------------------------------#
 
     def __sortPrices(self, retailer):
         retailers = self.__validRetailers()
@@ -212,7 +219,11 @@ class getProductLink:
             self.__findPage(retailer)
 
     def getPublic(self):
-        return {'Link': self.lowestPriceLink, 'Retailer': self.lowestPriceRetailer, 'Price': self.lowestPrice}
+        self.findPage()
+        lowestPriceLink = self.links[0]['Link']
+        lowestPriceRetailer = self.links[0]['Retailer']
+        lowestPrice = self.links[0]['Price']
+        return {'Link': lowestPriceLink, 'Retailer': lowestPriceRetailer, 'Price': lowestPrice}
 
 
 

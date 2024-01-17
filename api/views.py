@@ -23,7 +23,14 @@ def main(request):
     searchTermX = getProductLink(productName, category)
     result = searchTermX.getPublic()
 
-    return HttpResponse(result, content_type='application/json')
+    return JsonResponse({
+        "Link": result["Link"],
+        "Retailer": result["Retailer"],
+        "Price": result["Price"]
+    }, 
+    content_type='application/json',
+    safe=False,
+    status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def apiTest(request):
@@ -43,7 +50,7 @@ def apiTest(request):
         }
     )
 
-    return HttpResponse(result)
+    return JsonResponse(result)
 
 
 
