@@ -62,12 +62,12 @@ class getProductLink:
             print(validRetailers, end="\n")
             return validRetailers
 
-    def findPage(self):
+    def findPage(self) -> None:
         options = webdriver.ChromeOptions()
         options.add_argument("--headless")
         options.add_argument("--disable-gpu")
         options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        options.add_argument("--sdisable-dev-shm-usage")
         options.add_argument("--disable-logging")
         options.add_argument("--log-level=3")
         options.add_argument("--output=/dev/null")
@@ -156,7 +156,10 @@ class getProductLink:
             #-------Currys-------#
             #--------------------#
             elif retailer.get('Currys'):
-                pass
+                url = retailer['Currys']['url']
+                productNameArr = self.productName.split(" ")
+                url = f"{url}{productNameArr[0]}{'%20'.join(productNameArr[1:])}"
+                driver.get(url)
             #--------------------#
             #--------------------#
 

@@ -6,7 +6,7 @@
 	},
 
 	"Currys": {
-		"url": "https://www.currys.co.uk/",
+		"url": "https://www.currys.co.uk/search?q=",
 		"country": "UK",
 		"products": "all"
 	},
