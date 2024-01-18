@@ -52,14 +52,12 @@ class getProductLink:
     def __validRetailers(self):
         with open('api/stores.json', 'r') as f:
             retailers = json.load(f)
-
             validRetailers = []
             
             for key, value in retailers.items():
                 if self.category in value["products"] or value["products"] == "all":
                     validRetailers.append({key: value})
 
-            print(validRetailers, end="\n")
             return validRetailers
 
     def findPage(self) -> None:
@@ -127,7 +125,7 @@ class getProductLink:
                     except Exception as e:
                         driver.quit()
                         driver = webdriver.Chrome(options=options)
-                        driver.get(product)
+                        driver.get(f"https://www.amazon.co.uk{product}")
 
                     content = driver.page_source
                     soup = bs4(content, 'lxml')
@@ -158,8 +156,60 @@ class getProductLink:
             elif retailer.get('Currys'):
                 url = retailer['Currys']['url']
                 productNameArr = self.productName.split(" ")
-                url = f"{url}{productNameArr[0]}{'%20'.join(productNameArr[1:])}"
+                url = f"{url}{productNameArr[0]}&20{'%20'.join(productNameArr[1:])}"
                 driver.get(url)
+
+                count = 1
+                elementXPath = f'//*[@id="hash-10236204"]'
+                myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
+                WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
+
+                content = driver.page_source
+                soup = bs4(content, 'lxml')
+
+                # Use bs4 to get product links
+                productList = []
+                try:
+                    products = soup.find_all("a", class_="link text-truncate pdpLink")
+                except Exception as e:
+                    print("Currys could not find products")
+
+                for product in products:
+                    if (((self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
+                        "+".join(self.productName.split(" ")) in product.text)) and (
+                        ("case" not in product.text.lower())
+                        and ("protector" not in product.text.lower()) and ("cover" not in product.text.lower()))
+                        and ("screen" not in product.text.lower()) and ("film" not in product.text.lower())):
+
+                        productList.append(product.get('href'))
+
+                # Use bs4 to get product prices after selenium gets page link
+                productsList = []
+                for product in productList:
+                    try:
+                        driver.get(f"https://www.currys.co.uk/{product}")
+                    except Exception as e:
+                        driver.quit()
+                        driver = webdriver.Chrome(options=options)
+                        driver.get(f"https://www.currys.co.uk/{product}")
+
+                    content = driver.page_source
+                    soup = bs4(content, 'lxml')
+                    
+                    try:
+                        price = soup.find("span", class_="value").text[1:]
+                    except Exception as e:
+                        print("Currys could not find price")
+                        continue
+
+                for product in productsList:
+                    if self.links:
+                        if product['Price'] < self.links[0]['Price']:
+                            self.links.pop()
+                            self.links.append(product)
+                    else:
+                        self.links.append(product)            
+
             #--------------------#
             #--------------------#
 
