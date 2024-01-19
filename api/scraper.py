@@ -74,7 +74,7 @@ class getProductLink:
         options.add_argument("--disable-extensions")
 
         driver = webdriver.Chrome(options=options)
-        timeout = 10
+        timeout = 15
 
         retailers = self.__validRetailers()
 
@@ -91,7 +91,6 @@ class getProductLink:
 
                 count = 1
                 elementXPath = f'//*[@id="search"]/div[1]/div[1]/div/span[1]/div[1]/div[{count}]'
-                myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
                 WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
 
                 content = driver.page_source
@@ -110,10 +109,10 @@ class getProductLink:
                         temp += 1
                         continue
                     if ((self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
-                        "+".join(self.productName.split(" ")) in product.text) and (
-                        ("case" not in product.text.lower())
-                        and ("protector" not in product.text.lower()) and ("cover" not in product.text.lower()))
-                        and ("screen" not in product.text.lower()) and ("film" not in product.text.lower())):
+                    "+".join(self.productName.split(" ")) in product.text) and (
+                    ("case" not in product.text.lower())
+                    and ("protector" not in product.text.lower()) and ("cover" not in product.text.lower()))
+                    and ("screen" not in product.text.lower()) and ("film" not in product.text.lower())):
 
                         productList.append(product.get('href'))
 
@@ -133,7 +132,10 @@ class getProductLink:
                     price = soup.find("span", class_="a-offscreen").text
                     try:
                         price = float(price.replace("£", ""))
-                        productsList.append({'Link': f"https://www.amazon.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                        if price > 50.50:
+                            productsList.append({'Link': f"https://www.amazon.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                        else:
+                            continue
                     except ValueError:
                         pass
                     except Exception as e:
@@ -153,7 +155,7 @@ class getProductLink:
 
             #-------Currys-------#
             #--------------------#
-            elif retailer.get('Currys'):
+            if retailer.get('Currys'):
                 url = retailer['Currys']['url']
                 productNameArr = self.productName.split(" ")
                 url = f"{url}{productNameArr[0]}&20{'%20'.join(productNameArr[1:])}"
@@ -161,7 +163,6 @@ class getProductLink:
 
                 count = 1
                 elementXPath = f'//*[@id="hash-10236204"]'
-                myElem = WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
                 WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, f'{elementXPath}')))
 
                 content = driver.page_source
@@ -198,6 +199,11 @@ class getProductLink:
                     
                     try:
                         price = soup.find("span", class_="value").text[1:]
+                        price = float(price)
+                        if price > 50.50:
+                            productsList.append({'Link': f"https://www.currys.co.uk/{product}", 'Retailer': retailer, 'Price': price})
+                        else:
+                            continue
                     except Exception as e:
                         print("Currys could not find price")
                         continue
@@ -269,6 +275,8 @@ class getProductLink:
                 pass
             #------------------------------#
             #------------------------------#
+            
+            driver.quit()
 
     def __sortPrices(self, retailer):
         retailers = self.__validRetailers()
