@@ -5,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
+import undetected_chromedriver as uc
 
 import json
 from time import sleep, time
@@ -71,7 +72,7 @@ class getProductLink:
         options.add_argument("--disable-crash-reporter")
         options.add_argument("--disable-extensions")
 
-        driver = webdriver.Chrome(options=options)
+        driver = uc.Chrome(options=options)
         timeout = 15
 
         #-------AMAZON-------#
@@ -159,35 +160,48 @@ class getProductLink:
         options.add_argument("--disable-crash-reporter")
         options.add_argument("--disable-extensions")
 
-        driver = webdriver.Chrome(options=options)
+
+        driver = uc.Chrome(options=options)
         timeout = 15
 
         #-------Currys-------#
         #--------------------#
         url = retailer['url']
         productNameArr = self.productName.split(" ")
-        url = f"{url}{productNameArr[0]}&20{'%20'.join(productNameArr[1:])}"
-        driver.get(url)
+        newUrl = f"{url}{productNameArr[0]}%20{'%20'.join(productNameArr[1:])}"
+        driver.get(newUrl)
 
-        sleep(2)
+        #element_present = EC.presence_of_element_located((By.CLASS_NAME, 'container search-results has-products'))
+        #WebDriverWait(driver, timeout).until(element_present)
+
         content = driver.page_source
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print(content)
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
         soup = bs4(content, 'lxml')
 
         # Use bs4 to get product links
         productList = []
         try:
             products = soup.find_all("a", class_="link text-truncate pdpLink")
+            products = [product.get('href') for product in products]
         except Exception as e:
-            print("Currys could not find products")
+            products = soup.find_all("a", class_="link click-beacon")
+            # replace each element with its href
+            products = [product.get('href') for product in products]
 
         for product in products:
-            if (((self.productName in product.text) or (self.productName.lower() in product.text.lower()) or (
-                "+".join(self.productName.split(" ")) in product.text)) and (
-                ("case" not in product.text.lower())
-                and ("protector" not in product.text.lower()) and ("cover" not in product.text.lower()))
-                and ("screen" not in product.text.lower()) and ("film" not in product.text.lower())):
+            if ((self.productName in product) or (self.productName.lower() in product) or (
+                "+".join(self.productName.split(" ")) in product)) and (
+                ("case" not in product)
+                and ("protector" not in product) and ("cover" not in product)
+                and ("screen" not in product) and ("film" not in product)):
 
-                productList.append(product.get('href'))
+                productList.append(product)
 
         # Use bs4 to get product prices after selenium gets page link
         productsList = []
