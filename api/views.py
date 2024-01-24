@@ -22,17 +22,8 @@ def main(request):
 
     searchTermX = getProductLink(productName, category)
 
-    try:
-        result = searchTermX.getPublic()
-    except IndexError:
-        return JsonResponse({
-            "Error": "No products found for this search term.",
-            "Status": 500
-        },
-        content_type='application/json',
-        safe=False,
-        status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+    result = searchTermX.getPublic()
+    
     return JsonResponse({
         "Link": result["Link"],
         "Retailer": result["Retailer"],
