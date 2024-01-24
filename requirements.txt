@@ -7,3 +7,5 @@ fake-useragent
 lxml
 sentry_sdk
 undetected-chromedriver==3.5.4
+django-cors-headers
+django-cors-middleware

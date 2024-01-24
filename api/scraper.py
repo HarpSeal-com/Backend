@@ -332,7 +332,7 @@ class getProductLink:
     def getPublic(self):
         retailers = self.__validRetailers()
 
-        self.findPageArgos(retailers['Argos'])
+        self.findPageAmazon(retailers['Amazon'])
 
         lowestPriceLink = self.links[0]['Link']
         lowestPriceRetailer = self.links[0]['Retailer']
