@@ -12,7 +12,7 @@
 	},
 
 	"Argos": {
-		"url": "https://www.argos.co.uk/",
+		"url": "https://www.argos.co.uk/search/--placeholder--/?clickOrigin=searchbar:search:term:--placeholder--",
 		"country": "UK",
 		"products": "all"
 	},

@@ -239,7 +239,86 @@ class getProductLink:
     #--------------------#
     
     def findPageArgos(self, retailer):
-            pass
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--sdisable-dev-shm-usage")
+        options.add_argument("--disable-logging")
+        options.add_argument("--log-level=3")
+        options.add_argument("--output=/dev/null")
+        options.add_argument("--disable-notifications")
+        options.add_argument("--disable-crash-reporter")
+        options.add_argument("--disable-extensions")
+
+
+        driver = uc.Chrome(options=options)
+        timeout = 15
+
+        url = retailer['url']
+        productNameArr = self.productName.split(" ")
+        #Replacing --placeholder with product name
+        newUrl = url.replace("--placeholder--", "-".join(productNameArr))
+        driver.get(newUrl)
+
+        #element_present = EC.presence_of_element_located((By.CLASS_NAME, 'container search-results has-products'))
+        #WebDriverWait(driver, timeout).until(element_present)
+
+        content = driver.page_source
+        print("@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@")
+        print(content)
+        print("@@@@@@@@@@@@@@@@\n@@@@@@@@@@@@@@@@")
+        soup = bs4(content, 'lxml')
+
+        # Use bs4 to get product links
+        productList = []
+        try:
+            products = soup.find_all("div", class_="ProductCardstyles__Link-h52kot-13 cnmosm")
+            products = [product.get('href') for product in products]
+        except Exception as e:
+            products = soup.find_all("a", class_="Buttonstyles__Button-sc-42scm2-2 izsPEe btn-cta")
+            # replace each element with its href
+            products = [product.get('href') for product in products]
+
+        # Use bs4 to get product prices after selenium gets page link
+        productsList = []
+        for product in productList:
+            try:
+                driver.get(f"https://www.argos.co.uk{product}")
+            except Exception as e:
+                driver.quit()
+                driver = uc.Chrome(options=options)
+                driver.get(f"https://www.argos.co.uk{product}")
+
+            content = driver.page_source
+            soup = bs4(content, 'lxml')
+            
+            try:
+                price = soup.find("span", class_="AddToTrolleyStickystyles__Price-sc-16hg2ek-3").text[1:]
+                price = float(price)
+                if price > 50.50:
+                    productsList.append({'Link': f"https://www.argos.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                else:
+                    continue
+            except Exception as e:
+                try:
+                    price = soup.find("li", class_="Pricestyles__Li-sc-1oev7i-0").get('content')
+                    price = float(price)
+                    if price > 50.50:
+                        productsList.append({'Link': f"https://www.argos.co.uk{product}", 'Retailer': retailer, 'Price': price})
+                    else:
+                        continue
+                except Exception as e:
+                    print("Currys could not find price")
+                    continue
+
+        for product in productsList:
+            if self.links:
+                if product['Price'] < self.links[0]['Price']:
+                    self.links.pop()
+                    self.links.append(product)
+            else:
+                self.links.append(product)            
     
 
     def findPageJohnLewis(self, retailer):
@@ -253,7 +332,7 @@ class getProductLink:
     def getPublic(self):
         retailers = self.__validRetailers()
 
-        self.findPageCurrys(retailers['Currys'])
+        self.findPageArgos(retailers['Argos'])
 
         lowestPriceLink = self.links[0]['Link']
         lowestPriceRetailer = self.links[0]['Retailer']
