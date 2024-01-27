@@ -17,6 +17,12 @@
 		"products": "all"
 	},
 
+	"AO": {
+		"url": "https://ao.com/l/search/101/99/?search={placeholder}",
+		"country": "UK",
+		"products": "all"
+	},
+
 	"Apple": {
 		"url": "https://www.apple.com/uk/",
 		"country": "UK",

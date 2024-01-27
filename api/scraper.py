@@ -329,6 +329,10 @@ class getProductLink:
             pass
     
 
+    def findPageAo(self, retailer):
+            pass
+    
+
     def getPublic(self):
         retailers = self.__validRetailers()
 
