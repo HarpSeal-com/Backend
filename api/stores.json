@@ -18,7 +18,7 @@
 	},
 
 	"AO": {
-		"url": "https://ao.com/l/search/101/99/?search={placeholder}",
+		"url": "https://ao.com/l/search/101/99/?search=",
 		"country": "UK",
 		"products": "all"
 	},

@@ -330,7 +330,125 @@ class getProductLink:
     
 
     def findPageAo(self, retailer):
-            pass
+        options = webdriver.ChromeOptions()
+        options.add_argument("--headless")
+        options.add_argument("--disable-gpu")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--sdisable-dev-shm-usage")
+        options.add_argument("--disable-logging")
+        options.add_argument("--log-level=3")
+        options.add_argument("--output=/dev/null")
+        options.add_argument("--disable-notifications")
+        options.add_argument("--disable-crash-reporter")
+        options.add_argument("--disable-extensions")
+
+        driver = uc.Chrome(options=options)
+        driver.add_cookie({'name': 'AO-SSL', 'value': '1'})
+        timeout = 15
+
+        #-------AO-------#
+        #--------------------#
+        url = retailer['url']
+        productNameArr = self.productName.split(" ")
+        newUrl = f"{url}{productNameArr[0]} {' '.join(productNameArr[1:])}"
+
+        driver.get('https://ao.com/')
+
+        try:
+            #Get price directly
+            content = driver.page_source
+            soup = bs4(content, 'lxml')
+
+            price = soup.find("div", class_="text-display m-0").text[1:]
+            price = float(price)
+
+            product = {'Link': newUrl, 'Retailer': retailer, 'Price': price}
+
+            if price > 50.50:
+                if self.links:
+                    if product['Price'] < self.links[0]['Price']:
+                        self.links.pop()
+                        self.links.append(product)
+                else:
+                    self.links.append(product)
+            return
+
+        except Exception as e:
+            #Do the regular
+            products = driver.find_elements(By.CSS_SELECTOR, '[data-testid="product-card-link"]')
+            products = [product.get_attribute('href') for product in products]
+
+            productList = []
+            for product in products:
+                if ((self.productName in product) or (self.productName.lower() in product) or (
+                    "+".join(self.productName.split(" ")) in product)) and (
+                    ("case" not in product)
+                    and ("protector" not in product) and ("cover" not in product)
+                    and ("screen" not in product) and ("film" not in product)):
+
+                    productList.append(product)
+
+            # Use bs4 to get product prices after selenium gets page link
+                
+
+
+        #element_present = EC.presence_of_element_located((By.CLASS_NAME, 'container search-results has-products'))
+        #WebDriverWait(driver, timeout).until(element_present)
+
+        content = driver.page_source
+        soup = bs4(content, 'lxml')
+
+        # Use bs4 to get product links
+        productList = []
+        try:
+            products = soup.find_all("a", class_="link text-truncate pdpLink")
+            products = [product.get('href') for product in products]
+        except Exception as e:
+            products = soup.find_all("a", class_="link click-beacon")
+            # replace each element with its href
+            products = [product.get('href') for product in products]
+
+        for product in products:
+            if ((self.productName in product) or (self.productName.lower() in product) or (
+                "+".join(self.productName.split(" ")) in product)) and (
+                ("case" not in product)
+                and ("protector" not in product) and ("cover" not in product)
+                and ("screen" not in product) and ("film" not in product)):
+
+                productList.append(product)
+
+        # Use bs4 to get product prices after selenium gets page link
+        productsList = []
+        for product in productList:
+            try:
+                driver.get(f"https://www.currys.co.uk/{product}")
+            except Exception as e:
+                driver.quit()
+                driver = webdriver.Chrome(options=options)
+                driver.get(f"https://www.currys.co.uk/{product}")
+
+            content = driver.page_source
+            soup = bs4(content, 'lxml')
+            
+            try:
+                price = soup.find("span", class_="value").text[1:]
+                price = float(price)
+                if price > 50.50:
+                    productsList.append({'Link': f"https://www.currys.co.uk/{product}", 'Retailer': retailer, 'Price': price})
+                else:
+                    continue
+            except Exception as e:
+                print("Currys could not find price")
+                continue
+
+        for product in productsList:
+            if self.links:
+                if product['Price'] < self.links[0]['Price']:
+                    self.links.pop()
+                    self.links.append(product)
+            else:
+                self.links.append(product)            
+
     
 
     def getPublic(self):
