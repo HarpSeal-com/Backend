@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9xx&_cfkrxxek!hp0g(n%uo=ay$lx%%=(yg45oklr9v3nos0*m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['harpseal.azurewebsites.net', 'https://harpseal.vercel.app/']
 
 
 # Application definition
