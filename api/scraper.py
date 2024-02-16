@@ -457,7 +457,7 @@ class getProductLink:
         self.findPageAmazon(retailers['Amazon'])
 
         lowestPriceLink = self.links[0]['Link']
-        lowestPriceRetailer = self.links[0]['Retailer']
+        lowestPriceRetailer = self.links[0]
         lowestPrice = self.links[0]['Price']
-        return {'Link': lowestPriceLink, 'Retailer': lowestPriceRetailer, 'Price': lowestPrice}
+        return {'Link': lowestPriceLink, 'Retailer': "Amazon", 'Price': lowestPrice}
 

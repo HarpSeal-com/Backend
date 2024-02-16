@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9xx&_cfkrxxek!hp0g(n%uo=ay$lx%%=(yg45oklr9v3nos0*m
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['harpseal.azurewebsites.net', 'https://harpseal.vercel.app/']
+ALLOWED_HOSTS = ['harpseal.azurewebsites.net', 'https://harpseal.vercel.app/, "*", [*]']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     "api"
 ]
+CORS_ALLOWED_ORIGINS = ['harpseal.azurewebsites.net', 'https://harpseal.vercel.app/, "*", [*]']
 CORS_ORIGIN_ALLOW_ALL = True
 
 MIDDLEWARE = [
